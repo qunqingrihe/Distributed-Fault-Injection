@@ -82,7 +82,6 @@ public class Proxy1 {
                 }
             });
         }
-
         @Override
         public void channelRead(final ChannelHandlerContext ctx, Object msg) {
             // 当读取到数据时，将数据写入到与后端服务器的连接
