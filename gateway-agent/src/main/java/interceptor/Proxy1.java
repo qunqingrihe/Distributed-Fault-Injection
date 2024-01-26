@@ -8,13 +8,14 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
-
 public class Proxy1 {
     private final int port;
     // 构造函数，接收一个端口号
     public Proxy1(int port) {
         this.port = port;
     }
+
+
 
     // 启动代理服务器
     public void start() {
@@ -27,7 +28,7 @@ public class Proxy1 {
             b.group(bossGroup, workerGroup) // 设置EventLoopGroup
                     .channel(NioServerSocketChannel.class) // 设置用于接收连接的Channel
                     .handler(new LoggingHandler(LogLevel.INFO)) // 设置日志处理器
-                    .childHandler(new ChannelInitializer<Channel>() { // 设置用于处理连接的处理器
+                    .childHandler(new ChannelInitializer<>() { // 设置用于处理连接的处理器
                         @Override
                         protected void initChannel(Channel ch) {
                             ch.pipeline().addLast(new LoggingHandler(LogLevel.INFO)); // 添加日志处理器
@@ -62,7 +63,7 @@ public class Proxy1 {
             Bootstrap b = new Bootstrap();
             b.group(inboundChannel.eventLoop()) // 使用与客户端相同的EventLoop
                     .channel(ctx.channel().getClass()) // 使用与客户端相同的Channel类
-                    .handler(new ChannelInitializer<Channel>() { // 设置用于处理连接的处理器
+                    .handler(new ChannelInitializer<>() { // 设置用于处理连接的处理器
                         @Override
                         protected void initChannel(Channel ch) {
                             ch.pipeline().addLast(new LoggingHandler(LogLevel.INFO)); // 添加日志处理器
