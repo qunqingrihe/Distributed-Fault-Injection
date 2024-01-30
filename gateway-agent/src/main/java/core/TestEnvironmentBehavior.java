@@ -16,4 +16,14 @@ public class TestEnvironmentBehavior implements EnvironmentBehavior {
     public void handle(ChannelHandlerContext ctx, Object msg) {
         FaultInjector faultInjector = config.getFaultInjector();
     }
+
+    @Override
+    public void forwardToTestEnvironment(ChannelHandlerContext ctx, Object msg) {
+
+    }
+
+    @Override
+    public void defaultBehavior(ChannelHandlerContext ctx, Object msg) {
+
+    }
 }

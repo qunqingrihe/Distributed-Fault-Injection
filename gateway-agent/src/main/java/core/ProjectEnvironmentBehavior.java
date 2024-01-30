@@ -9,7 +9,7 @@ import java.util.Random;
 public class ProjectEnvironmentBehavior implements EnvironmentBehavior {
 
     private final EnvironmentConfig config;
-    private final Random random=new Random();
+    private final Random random = new Random();
 
     public ProjectEnvironmentBehavior(EnvironmentConfig config) {
         this.config = config;
@@ -25,5 +25,16 @@ public class ProjectEnvironmentBehavior implements EnvironmentBehavior {
         } else {
             // 默认行为，如直接进行代理
             defaultBehavior(ctx, msg);
+        }
+    }
+
+    @Override
+    public void forwardToTestEnvironment(ChannelHandlerContext ctx, Object msg) {
+
+    }
+
+    @Override
+    public void defaultBehavior(ChannelHandlerContext ctx, Object msg) {
+
     }
 }
