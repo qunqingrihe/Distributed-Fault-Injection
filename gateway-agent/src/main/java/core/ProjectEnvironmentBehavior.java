@@ -1,18 +1,27 @@
 package core;
-
 import config.EnvironmentConfig;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
-
+import java.text.MessageFormat;
 import java.util.Random;
 
 public class ProjectEnvironmentBehavior implements EnvironmentBehavior {
 
     private final EnvironmentConfig config;
     private final Random random = new Random();
+    private Channel testEnvironmentChannel;
+    private Channel originalTargetChannel;
 
-    public ProjectEnvironmentBehavior(EnvironmentConfig config) {
+    public ProjectEnvironmentBehavior(
+            EnvironmentConfig config,
+            Channel testEnvironmentChannel,
+            Channel originalTargetChannel
+    ) {
         this.config = config;
+        this.testEnvironmentChannel = testEnvironmentChannel;
+        this.originalTargetChannel = originalTargetChannel;
     }
 
     @Override
@@ -30,11 +39,36 @@ public class ProjectEnvironmentBehavior implements EnvironmentBehavior {
 
     @Override
     public void forwardToTestEnvironment(ChannelHandlerContext ctx, Object msg) {
-
+        if(testEnvironmentChannel != null && testEnvironmentChannel.isActive()) {
+            System.out.println(MessageFormat.format("Forwarding the message to the test environment: {0}", msg.toString()));
+            ChannelFuture future = testEnvironmentChannel.writeAndFlush(msg);
+            future.addListener((ChannelFutureListener) channelFuture -> {
+                if (!channelFuture.isSuccess()) {
+                    System.err.println("Failed to forward the message to the test environment due to: " +
+                            channelFuture.cause());
+                    defaultBehavior(ctx, msg);
+                }
+            });
+        } else {
+            System.err.println("Test environment channel is not available.");
+            defaultBehavior(ctx, msg);
+        }
     }
 
     @Override
     public void defaultBehavior(ChannelHandlerContext ctx, Object msg) {
-
+        if (originalTargetChannel != null && originalTargetChannel.isActive()) {
+            System.out.println(MessageFormat.format("Default behavior: Passing the message along: {0}", msg.toString()));
+            ChannelFuture future = originalTargetChannel.writeAndFlush(msg);
+            future.addListener((ChannelFutureListener) channelFuture -> {
+                if (!channelFuture.isSuccess()) {
+                    System.err.println("Failed to send the message to the original target due to: " +
+                            channelFuture.cause());
+                }
+            });
+        } else {
+            System.err.println("Original target channel is not available.");
+        }
     }
+
 }
