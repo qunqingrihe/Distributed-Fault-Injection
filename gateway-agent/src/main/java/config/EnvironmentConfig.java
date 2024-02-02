@@ -83,12 +83,11 @@ public class EnvironmentConfig {
                     @Override
                     public void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline p = ch.pipeline();
-
                     }
                 });
 
         // 这里设置你的服务器地址
-        bootstrap.remoteAddress("test_env_host", 8080);
+        bootstrap.remoteAddress(getProxyServerAddress(), getProxyServerPort());
 
         return bootstrap;
     }
@@ -103,14 +102,10 @@ public class EnvironmentConfig {
                     @Override
                     public void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline p = ch.pipeline();
-                        // 可添加你的编码/解码器
-                        // 以及其他处理器
-                        // p.addLast(new OrigTarEnvChannelOutboundHandler());
                     }
                 });
-
-        // 这里设置你的服务器地址
-        bootstrap.remoteAddress("orig_tar_env_host", 8080);
+        // 这里设置服务器地址
+        bootstrap.remoteAddress(getProxyServerAddress(), getProxyServerPort());
 
         return bootstrap;
     }
