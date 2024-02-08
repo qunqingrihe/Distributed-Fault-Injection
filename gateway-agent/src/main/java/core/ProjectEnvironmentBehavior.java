@@ -11,8 +11,8 @@ public class ProjectEnvironmentBehavior implements EnvironmentBehavior {
 
     private final EnvironmentConfig config;
     private final Random random = new Random();
-    private Channel testEnvironmentChannel;
-    private Channel originalTargetChannel;
+    private final Channel testEnvironmentChannel;
+    private final Channel originalTargetChannel;
 
     public ProjectEnvironmentBehavior(
             EnvironmentConfig config,
@@ -70,5 +70,20 @@ public class ProjectEnvironmentBehavior implements EnvironmentBehavior {
             System.err.println("Original target channel is not available.");
         }
     }
+    @Override
+    public void receiveCommand(String command) {
+        // 解析命令字符串，提取出新的分流比例
+        String[] parts = command.split("=");
+        String key = parts[0];
+        double value = Double.parseDouble(parts[1]);
+
+        if ("divertPercentage".equals(key)) {
+            // 将新的分流比例设置到config中
+            config.setDivertPercentage(value);
+        } else {
+            System.err.println("Received unknown command: " + command);
+        }
+    }
+
 
 }

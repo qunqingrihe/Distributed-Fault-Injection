@@ -1,15 +1,17 @@
 package config;
 
+import communication.DefaultCommandReceiver;
+import core.EnvironmentBehavior;
 import core.FaultInjector;
+import core.ProjectEnvironmentProxyHandler;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 @RefreshScope //动态配置
 @Configuration
@@ -21,6 +23,9 @@ public class EnvironmentConfig {
     private boolean faultInjectorEnabled; // 是否启动故障注入器
     private double divertPercentage; // 流量重定向比例
     private FaultInjector faultInjector; // 故障注入器实例
+    private EnvironmentBehavior environmentBehavior; // 新增属性
+    private String origTargetAddress;
+    private int origTargetPort;
 
     public double getDivertPercentage() {
         return divertPercentage;
@@ -73,41 +78,47 @@ public class EnvironmentConfig {
     public void setFaultInjectorEnabled(boolean faultInjectorEnabled) {
         this.faultInjectorEnabled = faultInjectorEnabled;
     }
-    public Bootstrap createBootstrapForTestEnv() {
-        EventLoopGroup group = new NioEventLoopGroup();
-        Bootstrap bootstrap = new Bootstrap();
-
-        bootstrap.group(group)
-                .channel(NioSocketChannel.class)
-                .handler(new ChannelInitializer<SocketChannel>() {
-                    @Override
-                    public void initChannel(SocketChannel ch) throws Exception {
-                        ChannelPipeline p = ch.pipeline();
-                    }
-                });
-
-        // 这里设置你的服务器地址
-        bootstrap.remoteAddress(getProxyServerAddress(), getProxyServerPort());
-
-        return bootstrap;
+    public String getOrigTargetAddress() {
+        return origTargetAddress;
     }
 
-    public Bootstrap createBootstrapForOrigTarEnv() {
-        EventLoopGroup group = new NioEventLoopGroup();
-        Bootstrap bootstrap = new Bootstrap();
+    public void setOrigTargetAddress(String origTargetAddress) {
+        this.origTargetAddress = origTargetAddress;
+    }
 
-        bootstrap.group(group)
+    public int getOrigTargetPort() {
+        return origTargetPort;
+    }
+
+    public void setOrigTargetPort(int origTargetPort) {
+        this.origTargetPort = origTargetPort;
+    }
+    // 一个私有的辅助方法，用于创建Bootstrap实例
+    private Bootstrap createBootstrap(String host, int port, ChannelHandler channelHandler) {
+        EventLoopGroup group = new NioEventLoopGroup();
+        Bootstrap b = new Bootstrap();
+        b.group(group)
                 .channel(NioSocketChannel.class)
                 .handler(new ChannelInitializer<SocketChannel>() {
                     @Override
-                    public void initChannel(SocketChannel ch) throws Exception {
-                        ChannelPipeline p = ch.pipeline();
+                    protected void initChannel(SocketChannel ch) {
+                        ChannelPipeline pipeline = ch.pipeline();
+                        pipeline.addLast(channelHandler); // 将传入的 ChannelHandler 添加到 pipeline
                     }
-                });
-        // 这里设置服务器地址
-        bootstrap.remoteAddress(getProxyServerAddress(), getProxyServerPort());
+                })
+                .option(ChannelOption.SO_KEEPALIVE, true);
+        b.remoteAddress(host, port);
+        return b;
+    }
 
-        return bootstrap;
+    @Bean
+    public Bootstrap createBootstrapForTestEnv(ChannelHandler channelHandler) {
+        return createBootstrap(proxyServerAddress, proxyServerPort, channelHandler);
+    }
+
+    @Bean
+    public Bootstrap createBootstrapForOrigTarEnv(ChannelHandler channelHandler) {
+        return createBootstrap(origTargetAddress, origTargetPort, channelHandler);
     }
 }
 

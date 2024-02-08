@@ -6,5 +6,6 @@ public interface EnvironmentBehavior {
     void handle(ChannelHandlerContext ctx, Object msg);
     void forwardToTestEnvironment(ChannelHandlerContext ctx, Object msg);
     void defaultBehavior(ChannelHandlerContext ctx, Object msg);
+    void receiveCommand(String command);
 }
 

@@ -26,4 +26,9 @@ public class TestEnvironmentBehavior implements EnvironmentBehavior {
     public void defaultBehavior(ChannelHandlerContext ctx, Object msg) {
 
     }
+
+    @Override
+    public void receiveCommand(String command) {
+
+    }
 }

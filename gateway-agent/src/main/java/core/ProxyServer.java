@@ -33,31 +33,18 @@ public class ProxyServer {
             bootstrap.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
                     .childHandler(new ChannelInitializer<SocketChannel>() {
-                        @SneakyThrows
                         @Override
                         protected void initChannel(SocketChannel ch) {
-                            ChannelFuture testEnvChannelFuture = bootstrapTestEnv.connect();
-                            ChannelFuture origTarChannelFuture = bootstrapOrigTar.connect();
-                            Channel testEnvironmentChannel = testEnvChannelFuture.sync().channel();
-                            Channel originalTargetChannel = origTarChannelFuture.sync().channel();
-                            EnvironmentBehavior behavior = new ProjectEnvironmentBehavior(config,testEnvironmentChannel, originalTargetChannel);
-                            ProxyHandler handler = new ProxyHandler(behavior);
-                            ch.pipeline().addLast(handler);
+                            // 在这里，我们不立即创建 EnvironmentBehavior 实例
+                            // 而是将 Bootstrap 实例和配置传递给 ProxyHandler
+                            ch.pipeline().addLast(new ProxyHandler(bootstrapTestEnv, bootstrapOrigTar, config));
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG, 128)
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
 
-            ChannelFuture bindFuture = bootstrap.bind(port);
-            bindFuture.sync().addListener(future -> {
-                if (future.isSuccess()) {
-                    System.out.println("Server started successfully.");
-                } else {
-                    System.out.println("Server could not be started.");
-                    future.cause().printStackTrace();
-                }
-            });
-
+            // 绑定并开始接受传入的连接
+            ChannelFuture bindFuture = bootstrap.bind(port).sync();
             bindFuture.channel().closeFuture().sync();
         } finally {
             workerGroup.shutdownGracefully();
@@ -68,8 +55,18 @@ public class ProxyServer {
     public static void main(String[] args) throws Exception {
         ApplicationContext context = new AnnotationConfigApplicationContext("config");
         EnvironmentConfig config = context.getBean(EnvironmentConfig.class);
-        Bootstrap bootstrapTestEnv = config.createBootstrapForTestEnv();
-        Bootstrap bootstrapOrigTar = config.createBootstrapForOrigTarEnv();
+
+        // 创建EnvironmentBehavior实例
+        EnvironmentBehavior testEnvBehavior = new ProjectEnvironmentBehavior(config, null, null);
+        EnvironmentBehavior origTarEnvBehavior = new TestEnvironmentBehavior(config);
+
+        // 创建ChannelHandler实例
+        ChannelHandler testEnvChannelHandler = new ProjectEnvironmentProxyHandler(testEnvBehavior);
+        ChannelHandler origTarEnvChannelHandler = new TestEnvironmentProxyHandler(origTarEnvBehavior);
+
+        // 使用创建好的ChannelHandler来创建Bootstrap实例
+        Bootstrap bootstrapTestEnv = config.createBootstrapForTestEnv(testEnvChannelHandler);
+        Bootstrap bootstrapOrigTar = config.createBootstrapForOrigTarEnv(origTarEnvChannelHandler);
         ChannelFuture testEnvChannelFuture = bootstrapTestEnv.connect();
         ChannelFuture origTarChannelFuture = bootstrapOrigTar.connect();
         Channel testEnvironmentChannel = testEnvChannelFuture.sync().channel();
@@ -78,10 +75,10 @@ public class ProxyServer {
         ProxyHandler handler;
         if ("project".equals(config.getEnvironment())) {
             EnvironmentBehavior behavior = new ProjectEnvironmentBehavior(config, testEnvironmentChannel, originalTargetChannel);
-            handler = new ProxyHandler(behavior);
+            handler = new ProxyHandler(bootstrapTestEnv, bootstrapOrigTar, config);
         } else if ("test".equals(config.getEnvironment())) {
             EnvironmentBehavior behavior = new TestEnvironmentBehavior(config);
-            handler = new ProxyHandler(behavior);
+            handler = new ProxyHandler(bootstrapTestEnv, bootstrapOrigTar, config);
         } else {
             throw new IllegalArgumentException("Invalid environment: " + config.getEnvironment());
         }
