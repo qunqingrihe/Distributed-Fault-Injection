@@ -6,7 +6,6 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import lombok.SneakyThrows;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 public class ProxyServer {
@@ -51,7 +50,6 @@ public class ProxyServer {
             bossGroup.shutdownGracefully();
         }
     }
-
     public static void main(String[] args) throws Exception {
         ApplicationContext context = new AnnotationConfigApplicationContext("config");
         EnvironmentConfig config = context.getBean(EnvironmentConfig.class);
@@ -71,7 +69,6 @@ public class ProxyServer {
         ChannelFuture origTarChannelFuture = bootstrapOrigTar.connect();
         Channel testEnvironmentChannel = testEnvChannelFuture.sync().channel();
         Channel originalTargetChannel = origTarChannelFuture.sync().channel();
-
         ProxyHandler handler;
         if ("project".equals(config.getEnvironment())) {
             EnvironmentBehavior behavior = new ProjectEnvironmentBehavior(config, testEnvironmentChannel, originalTargetChannel);

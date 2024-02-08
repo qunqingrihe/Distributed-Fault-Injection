@@ -40,6 +40,12 @@ public class ProxyHandler extends ChannelInboundHandlerAdapter {
     }
     private EnvironmentBehavior createEnvironmentBehavior(Channel channel) {
         // 根据配置和Channel创建相应的EnvironmentBehavior实例
-        return new ProjectEnvironmentBehavior(config, channel, null); // 或者其他逻辑
+        if ("project".equals(config.getEnvironment())) {
+            return new ProjectEnvironmentBehavior(config, channel, null); // 针对项目环境
+        } else if ("test".equals(config.getEnvironment())) {
+            return new TestEnvironmentBehavior(config); // 针对测试环境
+        } else {
+            throw new IllegalArgumentException("Unknown environment type: " + config.getEnvironment());
+        }
     }
 }

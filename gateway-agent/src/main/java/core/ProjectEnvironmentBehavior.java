@@ -36,6 +36,14 @@ public class ProjectEnvironmentBehavior implements EnvironmentBehavior {
             defaultBehavior(ctx, msg);
         }
     }
+    public void closeChannels() {
+        if (testEnvironmentChannel != null) {
+            testEnvironmentChannel.close();
+        }
+        if (originalTargetChannel != null) {
+            originalTargetChannel.close();
+        }
+    }
 
     @Override
     public void forwardToTestEnvironment(ChannelHandlerContext ctx, Object msg) {
