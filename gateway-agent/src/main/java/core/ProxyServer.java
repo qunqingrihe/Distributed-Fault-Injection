@@ -6,6 +6,8 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.HttpServerCodec;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 public class ProxyServer {
@@ -15,13 +17,16 @@ public class ProxyServer {
 
     private Bootstrap bootstrapTestEnv;
     private Bootstrap bootstrapOrigTar;
+    private final ChannelInboundHandler httpServerHandler;
 
-    public ProxyServer(int port, ProxyHandler proxyHandler, Bootstrap bootstrapTestEnv, Bootstrap bootstrapOrigTar,EnvironmentConfig config) {
+
+    public ProxyServer(int port, ProxyHandler proxyHandler, Bootstrap bootstrapTestEnv, Bootstrap bootstrapOrigTar,EnvironmentConfig config, ChannelInboundHandler httpServerHandler) {
         this.port = port;
         this.proxyHandler = proxyHandler;
         this.bootstrapTestEnv = bootstrapTestEnv;
         this.bootstrapOrigTar = bootstrapOrigTar;
         this.config = config;
+        this.httpServerHandler = httpServerHandler;
     }
 
     public void start() throws Exception {
@@ -37,6 +42,9 @@ public class ProxyServer {
                             // 在这里，我们不立即创建 EnvironmentBehavior 实例
                             // 而是将 Bootstrap 实例和配置传递给 ProxyHandler
                             ch.pipeline().addLast(new ProxyHandler(bootstrapTestEnv, bootstrapOrigTar, config));
+                            ch.pipeline().addLast(new HttpServerCodec());
+                            ch.pipeline().addLast(new HttpObjectAggregator(65536));
+                            ch.pipeline().addLast(httpServerHandler);
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG, 128)
@@ -50,38 +58,44 @@ public class ProxyServer {
             bossGroup.shutdownGracefully();
         }
     }
-    public static void main(String[] args) throws Exception {
-        ApplicationContext context = new AnnotationConfigApplicationContext("config");
-        EnvironmentConfig config = context.getBean(EnvironmentConfig.class);
+        public static void main(String[] args) throws Exception {
+            ApplicationContext context = new AnnotationConfigApplicationContext("config");
+            EnvironmentConfig config = context.getBean(EnvironmentConfig.class);
 
-        // 创建EnvironmentBehavior实例
-        EnvironmentBehavior testEnvBehavior = new ProjectEnvironmentBehavior(config, null, null);
-        EnvironmentBehavior origTarEnvBehavior = new TestEnvironmentBehavior(config);
+            // 创建Bootstrap实例
+            Bootstrap bootstrapTestEnv = config.createBootstrapForTestEnv(null); // 这里传入null作为ChannelHandler，稍后设置
+            Bootstrap bootstrapOrigTar = config.createBootstrapForOrigTarEnv(null); // 同上
 
-        // 创建ChannelHandler实例
-        ChannelHandler testEnvChannelHandler = new ProjectEnvironmentProxyHandler(testEnvBehavior);
-        ChannelHandler origTarEnvChannelHandler = new TestEnvironmentProxyHandler(origTarEnvBehavior);
+            // 连接到测试环境和原始目标环境
+            ChannelFuture testEnvChannelFuture = bootstrapTestEnv.connect();
+            ChannelFuture origTarChannelFuture = bootstrapOrigTar.connect();
 
-        // 使用创建好的ChannelHandler来创建Bootstrap实例
-        Bootstrap bootstrapTestEnv = config.createBootstrapForTestEnv(testEnvChannelHandler);
-        Bootstrap bootstrapOrigTar = config.createBootstrapForOrigTarEnv(origTarEnvChannelHandler);
-        ChannelFuture testEnvChannelFuture = bootstrapTestEnv.connect();
-        ChannelFuture origTarChannelFuture = bootstrapOrigTar.connect();
-        Channel testEnvironmentChannel = testEnvChannelFuture.sync().channel();
-        Channel originalTargetChannel = origTarChannelFuture.sync().channel();
-        ProxyHandler handler;
-        if ("project".equals(config.getEnvironment())) {
-            EnvironmentBehavior behavior = new ProjectEnvironmentBehavior(config, testEnvironmentChannel, originalTargetChannel);
-            handler = new ProxyHandler(bootstrapTestEnv, bootstrapOrigTar, config);
-        } else if ("test".equals(config.getEnvironment())) {
-            EnvironmentBehavior behavior = new TestEnvironmentBehavior(config);
-            handler = new ProxyHandler(bootstrapTestEnv, bootstrapOrigTar, config);
-        } else {
-            throw new IllegalArgumentException("Invalid environment: " + config.getEnvironment());
+            // 确保连接完成
+            Channel testEnvironmentChannel = testEnvChannelFuture.sync().channel();
+            Channel originalTargetChannel = origTarChannelFuture.sync().channel();
+            // 创建ProxyHandler实例，它将会根据环境配置的不同来决定具体的行为
+            ProxyHandler handler;
+            EnvironmentBehavior testEnvBehavior = new ProjectEnvironmentBehavior(config, testEnvironmentChannel, originalTargetChannel);
+            EnvironmentBehavior origTarBehavior = new ProjectEnvironmentBehavior(config, testEnvironmentChannel, originalTargetChannel);
+            if ("project".equals(config.getEnvironment())) {
+                handler = new ProjectEnvironmentProxyHandler(bootstrapTestEnv, bootstrapOrigTar, config, testEnvironmentChannel, originalTargetChannel);
+            } else if ("test".equals(config.getEnvironment())) {
+                // 这里需要传入所有必要的参数来创建TestEnvironmentProxyHandler实例
+                handler = new TestEnvironmentProxyHandler(bootstrapTestEnv, bootstrapOrigTar, config, testEnvBehavior);
+            } else {
+                throw new IllegalArgumentException("Invalid environment: " + config.getEnvironment());
+            }
+
+            // 使用创建好的ChannelHandler来更新Bootstrap实例
+            bootstrapTestEnv.handler(handler);
+            bootstrapOrigTar.handler(handler);
+
+            int port = config.getProxyServerPort();
+            ProjectEnvironmentProxyHandler proxyHandler = new ProjectEnvironmentProxyHandler(bootstrapTestEnv, bootstrapOrigTar, config, testEnvironmentChannel, originalTargetChannel);
+            ChannelInboundHandler httpServerHandler = new HttpServerHandler(proxyHandler);
+
+            // 创建并启动代理服务器
+            new ProxyServer(port, handler, bootstrapTestEnv, bootstrapOrigTar, config, httpServerHandler).start();
         }
 
-        int port = config.getProxyServerPort();
-
-        new ProxyServer(port, handler, bootstrapTestEnv, bootstrapOrigTar,config).start();
     }
-}

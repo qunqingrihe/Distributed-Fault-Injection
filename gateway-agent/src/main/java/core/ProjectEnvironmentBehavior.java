@@ -1,4 +1,5 @@
 package core;
+
 import config.EnvironmentConfig;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -11,8 +12,8 @@ public class ProjectEnvironmentBehavior implements EnvironmentBehavior {
 
     private final EnvironmentConfig config;
     private final Random random = new Random();
-    private final Channel testEnvironmentChannel;
-    private final Channel originalTargetChannel;
+    private Channel testEnvironmentChannel;
+    private Channel originalTargetChannel;
 
     public ProjectEnvironmentBehavior(
             EnvironmentConfig config,
@@ -26,7 +27,6 @@ public class ProjectEnvironmentBehavior implements EnvironmentBehavior {
 
     @Override
     public void handle(ChannelHandlerContext ctx, Object msg) {
-
         double divertPercentage = config.getDivertPercentage();
         if (random.nextDouble() < divertPercentage) {
             // 使用一个方法将请求转发到测试环境
@@ -36,6 +36,7 @@ public class ProjectEnvironmentBehavior implements EnvironmentBehavior {
             defaultBehavior(ctx, msg);
         }
     }
+
     public void closeChannels() {
         if (testEnvironmentChannel != null) {
             testEnvironmentChannel.close();
@@ -78,6 +79,7 @@ public class ProjectEnvironmentBehavior implements EnvironmentBehavior {
             System.err.println("Original target channel is not available.");
         }
     }
+
     @Override
     public void receiveCommand(String command) {
         // 解析命令字符串，提取出新的分流比例
@@ -94,4 +96,14 @@ public class ProjectEnvironmentBehavior implements EnvironmentBehavior {
     }
 
 
+
+    public void setTestEnvironmentChannel(Channel testEnvironmentChannel) {
+        this.testEnvironmentChannel = testEnvironmentChannel;
+    }
+
+
+
+    public void setOriginalTargetChannel(Channel originalTargetChannel) {
+        this.originalTargetChannel = originalTargetChannel;
+    }
 }

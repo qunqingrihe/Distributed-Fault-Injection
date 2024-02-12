@@ -7,8 +7,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
 public class ProxyHandler extends ChannelInboundHandlerAdapter {
-    private final Bootstrap bootstrapTestEnv;
-    private final Bootstrap bootstrapOrigTar;
+    public Bootstrap bootstrapTestEnv;
+    public Bootstrap bootstrapOrigTar;
     private final EnvironmentConfig config;
     private EnvironmentBehavior behavior;
 
@@ -17,6 +17,8 @@ public class ProxyHandler extends ChannelInboundHandlerAdapter {
         this.bootstrapOrigTar = bootstrapOrigTar;
         this.config = config;
     }
+
+
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
