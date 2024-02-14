@@ -3,14 +3,19 @@ package core;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import event.*
+
+
 
 
 public class FaultInjector {
+
     // 模拟流量注入
     public void injectTrafficFault() {
 
         // 调用JNI方法来发送错误数据包
         // 假设有一个nativeLib库中的nativeMethod方法用于发送错误包
+        PacketInjector.injectFaultyPacket();
 
     }
 
