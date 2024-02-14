@@ -38,6 +38,8 @@ public class EnvironmentConfig {
     private String origTargetAddress;
     @Getter
     private int origTargetPort;
+    @Getter
+    private String managementSystemEndpoint; // 管理系统的端点
 
     public void setDivertPercentage(double divertPercentage) {
         this.divertPercentage = divertPercentage;
@@ -75,6 +77,9 @@ public class EnvironmentConfig {
         this.origTargetPort = origTargetPort;
     }
     // 一个私有的辅助方法，用于创建Bootstrap实例
+    public void setManagementSystemEndpoint(String managementSystemEndpoint) {
+        this.managementSystemEndpoint = managementSystemEndpoint;
+    }
     public Bootstrap createBootstrap(String host, int port, ChannelHandler channelHandler) {
         EventLoopGroup group = new NioEventLoopGroup();
         Bootstrap b = new Bootstrap();
@@ -108,21 +113,6 @@ public class EnvironmentConfig {
                 testEnvironmentChannel,
                 originalTargetChannel
         );
-
-        // 设置ChannelHandler到Bootstrap实例
-        bootstrapTestEnv.handler(new ChannelInitializer<SocketChannel>() {
-            @Override
-            protected void initChannel(SocketChannel ch) {
-                ch.pipeline().addLast(proxyHandler);
-            }
-        });
-        bootstrapOrigTar.handler(new ChannelInitializer<SocketChannel>() {
-            @Override
-            protected void initChannel(SocketChannel ch) {
-                ch.pipeline().addLast(proxyHandler);
-            }
-        });
-
         return proxyHandler;
     }
 

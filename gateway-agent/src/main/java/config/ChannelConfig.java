@@ -12,7 +12,8 @@ public class ChannelConfig {
 
     @Bean(name = "testEnvironmentChannel")
     public Channel testEnvironmentChannel(EnvironmentConfig config, ProjectEnvironmentProxyHandler proxyHandler) {
-        Bootstrap bootstrapTestEnv = config.createBootstrap(config.getProxyServerAddress(), config.getProxyServerPort(), proxyHandler);
+        // 确保在创建 channel 之前，proxyHandler 已经准备好了
+        Bootstrap bootstrapTestEnv = config.createBootstrapForTestEnv(proxyHandler);
         return bootstrapTestEnv.connect().channel();
     }
 

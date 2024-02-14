@@ -81,7 +81,7 @@ public class ProxyServer {
                 handler = new ProjectEnvironmentProxyHandler(bootstrapTestEnv, bootstrapOrigTar, config, testEnvironmentChannel, originalTargetChannel);
             } else if ("test".equals(config.getEnvironment())) {
                 // 这里需要传入所有必要的参数来创建TestEnvironmentProxyHandler实例
-                handler = new TestEnvironmentProxyHandler(bootstrapTestEnv, bootstrapOrigTar, config, testEnvBehavior);
+                handler = new TestEnvironmentProxyHandler(bootstrapTestEnv, bootstrapOrigTar, config);
             } else {
                 throw new IllegalArgumentException("Invalid environment: " + config.getEnvironment());
             }
@@ -90,9 +90,10 @@ public class ProxyServer {
             bootstrapTestEnv.handler(handler);
             bootstrapOrigTar.handler(handler);
 
+            FaultInjector faultInjector = new FaultInjector(); // 使用适当的构造函数
             int port = config.getProxyServerPort();
             ProjectEnvironmentProxyHandler proxyHandler = new ProjectEnvironmentProxyHandler(bootstrapTestEnv, bootstrapOrigTar, config, testEnvironmentChannel, originalTargetChannel);
-            ChannelInboundHandler httpServerHandler = new HttpServerHandler(proxyHandler);
+            ChannelInboundHandler httpServerHandler = new HttpServerHandler(proxyHandler,faultInjector, config);
 
             // 创建并启动代理服务器
             new ProxyServer(port, handler, bootstrapTestEnv, bootstrapOrigTar, config, httpServerHandler).start();

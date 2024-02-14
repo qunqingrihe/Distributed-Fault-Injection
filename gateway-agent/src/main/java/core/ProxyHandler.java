@@ -45,7 +45,7 @@ public class ProxyHandler extends ChannelInboundHandlerAdapter {
         if ("project".equals(config.getEnvironment())) {
             return new ProjectEnvironmentBehavior(config, channel, null); // 针对项目环境
         } else if ("test".equals(config.getEnvironment())) {
-            return new TestEnvironmentBehavior(config); // 针对测试环境
+            return new TestEnvironmentBehavior(config, channel); // 针对测试环境
         } else {
             throw new IllegalArgumentException("Unknown environment type: " + config.getEnvironment());
         }
