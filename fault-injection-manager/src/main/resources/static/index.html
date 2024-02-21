@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Management Console - Fault Injection</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Management Console - Fault Injection</h1>
+    <button id="status-btn">Get System Status</button>
+    <div id="status"></div>
+    <h2>Fault Injection</h2>
+    <button id="flow-injection-btn">Simulate Flow Injection Fault</button>
+    <button id="start-stop-test-btn">Simulate Start Stop Test Fault</button>
+    <button id="parameter-modification-btn">Simulate Parameter Modification Fault</button>
+    <h2>Divert Traffic</h2>
+    <input type="number" id="divert-percentage" placeholder="Enter divert percentage" min="0" max="100" required>
+    <button id="divert-percentage-btn">Set Divert Percentage</button>
+
+    <script>
+        $(document).ready(function (){
+            $('#status-btn').click(function (){
+                $.get('/api/management/status',function (data){
+                   $('#status').text(data);
+                });
+            });
+
+            $('#flow-injection-btn').click(function (){
+                $.post('/api/fault/inject/flow',function (data){
+                    alert('FlowInjection fault injected: '+data);
+                });
+            });
+
+            $('#start-stop-test-btn').click(function (){
+                $.post('/api/fault/inject/start',function (data){
+                    alert('StartStopTest fault injected: '+data);
+                });
+            });
+
+            $('#parameter-modification-btn').click(function (){
+                $.post('/api/fault/inject/parameter',function (data){
+                    alert('ParameterModification fault injected: '+data);
+                });
+            });
+            $('#divert-percentage-btn').click(function (){
+                var percnetage = $('#divert-percentage').val();
+                $.post('/config/divertPercentage',{percnetage:percnetage},function (data){
+                    alert('Divert percentage set to:'+data);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

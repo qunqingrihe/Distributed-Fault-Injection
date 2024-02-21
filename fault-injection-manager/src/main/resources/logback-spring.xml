@@ -1,0 +1,85 @@
+<!--<?xml version="1.0" encoding="UTF-8"?>-->
+<!--<configuration scan="true" scanPeriod="60 seconds" debug="false">-->
+<!--    &lt;!&ndash; 日志存放路径 &ndash;&gt;-->
+<!--    <property name="log.path" value="logs/test-log"/>-->
+<!--    &lt;!&ndash; 日志输出格式 &ndash;&gt;-->
+<!--    <property name="log.pattern" value="%d{HH:mm:ss.SSS} [%thread] %-5level %logger{20} - [%method,%line] - %msg%n"/>-->
+<!--    &lt;!&ndash; 读取SpringBoot配置文件获取logstash的地址和端口 &ndash;&gt;-->
+<!--    <springProperty scope="context" name="logstash-host" source="log.logstash-host"/>-->
+
+<!--    &lt;!&ndash; 控制台输出 &ndash;&gt;-->
+<!--    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">-->
+<!--        <encoder>-->
+<!--            <pattern>${log.pattern}</pattern>-->
+<!--        </encoder>-->
+<!--    </appender>-->
+
+<!--    &lt;!&ndash; 系统日志输出 &ndash;&gt;-->
+<!--    <appender name="file_info" class="ch.qos.logback.core.rolling.RollingFileAppender">-->
+<!--        <file>${log.path}/info.log</file>-->
+<!--        &lt;!&ndash; 循环政策：基于时间创建日志文件 &ndash;&gt;-->
+<!--        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">-->
+<!--            &lt;!&ndash; 日志文件名格式 &ndash;&gt;-->
+<!--            <fileNamePattern>${log.path}/info.%d{yyyy-MM-dd}.log</fileNamePattern>-->
+<!--            &lt;!&ndash; 日志最大的历史 7天 &ndash;&gt;-->
+<!--            <maxHistory>7</maxHistory>-->
+<!--        </rollingPolicy>-->
+<!--        <encoder>-->
+<!--            <pattern>${log.pattern}</pattern>-->
+<!--        </encoder>-->
+<!--        <filter class="ch.qos.logback.classic.filter.LevelFilter">-->
+<!--            &lt;!&ndash; 过滤的级别 &ndash;&gt;-->
+<!--            <level>INFO</level>-->
+<!--            &lt;!&ndash; 匹配时的操作：接收（记录） &ndash;&gt;-->
+<!--            <onMatch>ACCEPT</onMatch>-->
+<!--            &lt;!&ndash; 不匹配时的操作：拒绝（不记录） &ndash;&gt;-->
+<!--            <onMismatch>DENY</onMismatch>-->
+<!--        </filter>-->
+<!--    </appender>-->
+
+<!--    <appender name="file_error" class="ch.qos.logback.core.rolling.RollingFileAppender">-->
+<!--        <file>${log.path}/error.log</file>-->
+<!--        &lt;!&ndash; 循环政策：基于时间创建日志文件 &ndash;&gt;-->
+<!--        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">-->
+<!--            &lt;!&ndash; 日志文件名格式 &ndash;&gt;-->
+<!--            <fileNamePattern>${log.path}/error.%d{yyyy-MM-dd}.log</fileNamePattern>-->
+<!--            &lt;!&ndash; 日志最大的历史 60天 &ndash;&gt;-->
+<!--            <maxHistory>60</maxHistory>-->
+<!--        </rollingPolicy>-->
+<!--        <encoder>-->
+<!--            <pattern>${log.pattern}</pattern>-->
+<!--        </encoder>-->
+<!--        <filter class="ch.qos.logback.classic.filter.LevelFilter">-->
+<!--            &lt;!&ndash; 过滤的级别 &ndash;&gt;-->
+<!--            <level>ERROR</level>-->
+<!--            &lt;!&ndash; 匹配时的操作：接收（记录） &ndash;&gt;-->
+<!--            <onMatch>ACCEPT</onMatch>-->
+<!--            &lt;!&ndash; 不匹配时的操作：拒绝（不记录） &ndash;&gt;-->
+<!--            <onMismatch>DENY</onMismatch>-->
+<!--        </filter>-->
+<!--    </appender>-->
+
+<!--    &lt;!&ndash; 将日志文件输出到Logstash &ndash;&gt;-->
+<!--    <appender name="logstash" class="net.logstash.logback.appender.LogstashTcpSocketAppender">-->
+<!--        &lt;!&ndash; 获取logstash地址作为输出的目的地 &ndash;&gt;-->
+<!--        <destination>${logstash-host}</destination>-->
+<!--        <encoder charset="UTF-8" class="net.logstash.logback.encoder.LogstashEncoder"/>-->
+<!--    </appender>-->
+
+<!--    &lt;!&ndash; 系统模块日志级别控制  &ndash;&gt;-->
+<!--    <logger name="com.greateme" level="info"/>-->
+<!--    &lt;!&ndash; Spring日志级别控制  &ndash;&gt;-->
+<!--    <logger name="org.springframework" level="warn"/>-->
+
+<!--&lt;!&ndash;    <root level="info">&ndash;&gt;-->
+<!--&lt;!&ndash;        <appender-ref ref="console"/>&ndash;&gt;-->
+<!--&lt;!&ndash;    </root>&ndash;&gt;-->
+
+<!--    &lt;!&ndash;系统操作日志&ndash;&gt;-->
+<!--    <root level="info">-->
+<!--        <appender-ref ref="console"/>-->
+<!--        <appender-ref ref="file_info"/>-->
+<!--        <appender-ref ref="file_error"/>-->
+<!--        <appender-ref ref="logstash"/>-->
+<!--    </root>-->
+<!--</configuration>-->
