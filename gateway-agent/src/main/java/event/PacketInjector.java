@@ -1,3 +1,5 @@
+package event;
+
 import java.io.IOException;
 
 public class PacketInjector {
