@@ -239,7 +239,7 @@ public class FaultInjectionService {
         return updateConfig;
     }
     
-    //数据验证方法
+    //数据验证方法 ???
     private void validateFaultInjectionConfig(FaultInjectionConfigEntity config){
         
     }

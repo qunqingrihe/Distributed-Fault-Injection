@@ -1,6 +1,7 @@
 package com.example.faultinjectionmanager.controller;
 
 import com.example.faultinjectionmanager.service.FaultInjectionService;
+import core.FaultInjector;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,8 +11,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/fault")
 public class FaultInjectionController {
-    @Autowired
-    private FaultInjectionService faultInjectionService;
+//    @Autowired
+//    private FaultInjectionService faultInjectionService;
+    private FaultInjector faultInjector;
 
     //private FaultInjector faultInjector;
 
@@ -25,9 +27,9 @@ public class FaultInjectionController {
     @GetMapping("/inject/flow")
     public String injectFlowInjection(){
         //模拟流量注入故障的逻辑
-        faultInjectionService.injectFlow_injection();
+//        faultInjectionService.injectFlow_injection();
         //触发流量注入故障的接口
-        //faultInjector.injectTrafficFault();
+        faultInjector.injectTrafficFault();
         return "Flow Injection fault injected successfully";
     }
 
@@ -35,9 +37,9 @@ public class FaultInjectionController {
     @GetMapping("inject/start")
     public String injectStartStopTest(){
         //模拟启停测试故障注入的逻辑
-        faultInjectionService.injectStart_stop_test();
+//        faultInjectionService.injectStart_stop_test();
         //触发启停测试故障注入的接口
-        //faultInjector.injectKillFault();
+        faultInjector.injectKillFault();
         return "Start Stop Test fault injected successfully";
     }
 
@@ -45,9 +47,9 @@ public class FaultInjectionController {
     @GetMapping("/inject/parameter")
     public String injectParameterModification(){
         //模拟参数错误故障注入的逻辑
-        faultInjectionService.injectParameter_modification();
+//        faultInjectionService.injectParameter_modification();
         //触发参数修改故障注入的接口
-        //faultInjector.injectConfigurationFault();
+        faultInjector.injectConfigurationFault("","");
         return "Parameter Modification fault injected successfully";
     }
 }
