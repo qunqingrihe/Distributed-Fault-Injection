@@ -93,6 +93,10 @@
             <version>2.13.10</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>com.rabbitmq</groupId>
+            <artifactId>amqp-client</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

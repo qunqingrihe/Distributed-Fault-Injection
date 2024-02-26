@@ -1,4 +1,9 @@
+package core;
+
 import com.rabbitmq.client.*;
+import io.netty.channel.Channel;
+import reactor.netty.Connection;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.io.IOException;
@@ -12,7 +17,7 @@ public class CommandQueueManager {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost("localhost");
 
-        try (Connection connection = factory.newConnection();
+        try (Connection connection = (Connection) factory.newConnection();
              Channel channel = connection.createChannel()) {
 
             channel.queueDeclare(QUEUE_NAME, false, false, false, null);
