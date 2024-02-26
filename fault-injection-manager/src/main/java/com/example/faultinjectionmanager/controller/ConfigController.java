@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/config")
-public class ConfigController {
+public class  ConfigController {
     @Autowired
     private EnvironmentConfigService environmentConfigService;
     @Autowired

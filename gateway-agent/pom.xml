@@ -93,10 +93,14 @@
             <version>2.13.10</version>
             <scope>compile</scope>
         </dependency>
-        <dependency>
-            <groupId>com.rabbitmq</groupId>
-            <artifactId>amqp-client</artifactId>
-        </dependency>
+
+            <!-- RabbitMQ Java Client -->
+            <dependency>
+                <groupId>com.rabbitmq</groupId>
+                <artifactId>amqp-client</artifactId>
+                <version>5.14.0</version>
+            </dependency>
+
     </dependencies>
 
     <build>
