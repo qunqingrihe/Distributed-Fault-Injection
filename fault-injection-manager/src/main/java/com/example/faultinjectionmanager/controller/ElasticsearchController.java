@@ -2,7 +2,7 @@ package com.example.faultinjectionmanager.controller;
 
 import com.example.faultinjectionmanager.entity.FaultInjectLog;
 import com.example.faultinjectionmanager.service.ElasticsearchService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
