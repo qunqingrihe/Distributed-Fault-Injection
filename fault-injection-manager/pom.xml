@@ -157,6 +157,18 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-log4j2</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.example</groupId>
+            <artifactId>gateway-agent</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <!--        <dependency>-->
+<!--            <groupId>com.example</groupId>-->
+<!--            <artifactId>gateway-agent</artifactId>-->
+<!--            <version>0.0.1-SNAPSHOT</version>-->
+<!--&lt;!&ndash;            <scope>compile</scope>&ndash;&gt;-->
+<!--        </dependency>-->
     </dependencies>
     <dependencyManagement>
         <dependencies>
@@ -187,5 +199,7 @@
             </plugin>
         </plugins>
     </build>
+
+
 
 </project>
